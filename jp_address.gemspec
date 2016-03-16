@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version     = JpAddress::VERSION
   s.authors     = ["Tadashi K"]
   s.email       = ["densya203@skult.jp"]
-  s.homepage    = "https://github.com/densya203"
+  s.homepage    = "https://github.com/densya203/jp_address"
   s.summary     = "Simple japan-zipcode-addresses API"
   s.description = "JpAddress is simple japan-zipcode-addresses API. You can add address-search-api, and loading master-data script."
   s.license     = "MIT"

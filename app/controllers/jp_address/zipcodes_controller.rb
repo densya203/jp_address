@@ -4,7 +4,7 @@ module JpAddress
   class ZipcodesController < ApplicationController
     def search
       @zipcode = Zipcode.find_by(:zip => params[:zip]) || Zipcode.new
-      render text: @zipcode.to_json
+      render plain: @zipcode.to_json
     end
   end
 end

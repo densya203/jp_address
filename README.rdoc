@@ -1,11 +1,11 @@
 = JpAddress: A Rails plugin for Japan Zipcode API.
 
 == JpAddressとは
-日本郵便の「郵便番号データ」を Rails 5.2 で使用するためのプラグインです。
+日本郵便の「郵便番号データ」を Rails 6.1 で使用するための gem です。
 以下の機能を提供します。
 
-* 郵便局提供の郵便番号データをダウンロードしてＤＢにロードするメソッド。
-* 郵便番号をキーに住所情報を返却するＡＰＩ（コントローラ）。
+* 郵便局提供の郵便番号データをダウンロードしてＤＢにロードするクラスメソッド。（JpAddress::Zipcode.load_master_data）
+* 郵便番号をキーに住所情報を返却するＡＰＩ（jp_address/zipcodes#search）。
 
 要するに、「郵便番号検索 ruby gem」でググった人向けの gem です。
 お使いのRailsアプリケーションにマウントして使えますので、後必要なのは戻ってくるJSONを加工する手順だけです。
@@ -39,11 +39,13 @@ GemFileに追記
 /jp_address にマウントした場合、下記URLへGETリクエストをすることで、JSONを取得できます。
 後はこれを好きに加工してテキストボックスなどにセットして使ってください。
 
+  get リクエスト先
   http://localhost:3000/jp_address/zipcodes/search?zip=5330033
-  
+
+  戻り値 JSON
   {"id":84280,"zip":"5330033","prefecture":"大阪府","city":"大阪市東淀川区","town":"東中島"}
 
-== サンプルとなる coffee script
+== ＡＰＩを利用するためのサンプル JavaScript
 フォームには
 * zipcode（テキストボックス）
 * prefecture_id（セレクトボックス。いわゆる都道府県プルダウン）
@@ -54,48 +56,116 @@ GemFileに追記
 prefecture_id の選択は、都道府県名で行っています。
 なので、お使いの都道府県マスターのＩＤ値に影響を受けることなく選択できるはずです。
 
-  class AddressSearch
-    constructor: (zip_elem_id, prefecture_elem_id, address_elem_id) ->
-      @$zip               = $(zip_elem_id)
-      @$prefecture        = $(prefecture_elem_id)
-      @$address           = $(address_elem_id)
-      @prefecture_elem_id = prefecture_elem_id
+※ JQuery の存在を前提にしています。
+※ もともと CoffeeScript で書いてあったソースを decaffeinate したものです。
 
-    _remove_hyphen: ->
-      @$zip.val(@$zip.val().replace(/-/, ''))
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
 
-    _clear_current_value: ->
-      $(@prefecture_elem_id + ' >option:eq(0)').prop 'selected', true
-      @$address.val ''
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
 
-    _set_prefecture: (json) ->
-      $(@prefecture_elem_id + ' > option').each ->
-        if $(@).text() == json['prefecture']
-          $(@).prop 'selected', true
+      if ("value" in descriptor)
+        descriptor.writable = true;
 
-    _set_address: (json) ->
-      @$address.val json['city'] + json['town']
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
 
-    _call_api: ->
-      $.getJSON '/jp_address/zipcodes/search', {zip: @$zip.val()}, (json) =>
-        if json['id'] == null
-          @._clear_current_value()
-        else
-          @._set_prefecture json
-          @._set_address json
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps)
+      _defineProperties(Constructor.prototype, protoProps);
 
-    execute: ->
-      @._remove_hyphen()
-      if @$zip.val().length == 7
-        @._call_api()
+    if (staticProps)
+      _defineProperties(Constructor, staticProps);
 
-  $ ->
-    address_search = new AddressSearch('#zipcode', '#prefecture_id', '#address')
-    $('#zipcode').keyup ->
-      address_search.execute()
+    return Constructor;
+  }
+
+  var AddressSearch = function() {
+    "use strict";
+    function AddressSearch(zip_elem_id, prefecture_elem_id, address_elem_id) {
+      _classCallCheck(this, AddressSearch);
+      this.zip               = $(zip_elem_id);
+      this.prefecture        = $(prefecture_elem_id);
+      this.address           = $(address_elem_id);
+      this.prefecture_elem_id = prefecture_elem_id;
+    }
+
+    _createClass(AddressSearch, [{
+      key: "_remove_hyphen",
+
+      value: function _remove_hyphen() {
+        return this.zip.val(this.zip.val().replace(/-/, ''));
+      }
+    }, {
+      key: "_clear_current_value",
+
+      value: function _clear_current_value() {
+        $(this.prefecture_elem_id + ' >option:eq(0)').prop('selected', true);
+        return this.address.val('');
+      }
+    }, {
+      key: "_set_prefecture",
+
+      value: function _set_prefecture(json) {
+        return $(this.prefecture_elem_id + ' > option').each(function() {
+          if ($(this).text() === json['prefecture']) {
+            return $(this).prop('selected', true);
+          }
+        });
+      }
+    }, {
+      key: "_set_address",
+
+      value: function _set_address(json) {
+        return this.address.val(json['city'] + json['town']);
+      }
+    }, {
+      key: "_call_api",
+
+      value: function _call_api() {
+        var _this = this;
+        return $.getJSON('/jp_address/zipcodes/search', {zip: this.zip.val()}, function(json) {
+          if (json['id'] === null) {
+            return _this._clear_current_value();
+          } else {
+            _this._set_prefecture(json);
+            return _this._set_address(json);
+          }
+        });
+      }
+    }, {
+      key: "execute",
+
+      value: function execute() {
+        this._remove_hyphen();
+        if (this.zip.val().length === 7) {
+          return this._call_api();
+        }
+      }
+    }]);
+
+    return AddressSearch;
+  }();
+
+  // #zipcode, #prefecture_id, #address を各自の環境に合わせて書き換えてください。
+  $(function() {
+    var address_search = new AddressSearch('#zipcode', '#prefecture_id', '#address');
+    return $('#zipcode').keyup(function() {
+      return address_search.execute();
+    });
+  });
+
 
 == 作者
 
-Copyright 2016 (c) Tadashi K, under MIT License.
+Copyright 2016 (c) Tad Kam, under MIT License.
 
-Tadashi K <densya203@skult.jp>
+Tad Kam <densya203@skult.jp>

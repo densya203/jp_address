@@ -1,4 +1,4 @@
-= JpAddress: A Rails plugin for Japan Zipcode API.
+= Ruby on Rails 郵便番号検索 gem JpAddress: A Rails plugin for Japan Zipcode API.
 
 == JpAddressとは
 日本郵便の「郵便番号データ」を Rails 6.1 で使用するための gem です。

@@ -1,7 +1,7 @@
-= Ruby on Rails 郵便番号検索 gem JpAddress: A Rails plugin for Japan Zipcode API.
+= Ruby on Rails 6 で 郵便番号検索 な gem
 
 == JpAddressとは
-日本郵便の「郵便番号データ」を Rails 6.1 で使用するための gem です。
+日本郵便の「郵便番号データ（https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip）」を Rails 6.1 で使用するための gem です。
 以下の機能を提供します。
 
 * 郵便局提供の郵便番号データをダウンロードしてＤＢにロードするクラスメソッド。（JpAddress::Zipcode.load_master_data）

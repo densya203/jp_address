@@ -17,8 +17,8 @@ GemFileに追記
   gem 'jp_address'
 
 テーブルの作成
-  % rake jp_address:install:migrations
-  % rake db:migrate
+  % bundle exec rails jp_address:install:migrations
+  % bundle exec rails db:migrate
 
 == マスターデータのＤＢへのロード
 開発環境

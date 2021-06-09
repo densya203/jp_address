@@ -4,12 +4,15 @@
 日本郵便の「[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki-zip.html)」を Rails 6.1 で使用するための gem です。
 以下の機能を提供します。
 
-* [[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki/zip/ken_all.zip "ken_all.zip")]をダウンロードして自前ＤＢのテーブル（jp_address_zipcodes）にロードするクラスメソッド。（JpAddress::Zipcode.load_master_data）
-* 郵便番号を受け取り住所情報をJSONで返却するAPI（jp_address/zipcodes#search）。
+* [[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki/zip/ken_all.zip "ken_all.zip")]をダウンロードして自前ＤＢのテーブル（jp_address_zipcodes）にロードするクラスメソッド。（```JpAddress::Zipcode.load_master_data```）
+* 郵便番号を受け取り都道府県名と住所をJSONで返却するAPI。
+（```jp_address/zipcodes#search```）
 
-要するに、「**郵便番号住所検索 ruby gem**」でググった人向けの gem です。<br>
-お使いのRailsアプリケーションにマウントして使えますので、後必要なのは戻ってくるJSONを加工する手順だけです。<br>
-（下にサンプルのJavaScriptコードを掲載しています。）
+要するに、「**郵便番号住所検索 ruby gem**」でググった人向けの gem です。
+
+APIはお使いのRailsアプリケーションにマウントして使います。外部のサービスに依存しません。<br>
+あと必要なのは、戻ってくるJSONを加工してHTML要素にセットするJavaScriptの記述だけです。<br>
+（本記事下部にサンプルコードを掲載しています。）
 
 ### インストール
 GemFileに追記
@@ -27,10 +30,10 @@ $ bundle exec rails db:migrate
 ### テーブルへの郵便番号データのロード
 ```
 # 開発環境
-$ rails runner -e development 'JpAddress::Zipcode.load_master_data'
+$ bundle exec rails runner -e development 'JpAddress::Zipcode.load_master_data'
 
 # 本番環境
-$ rails runner -e production 'JpAddress::Zipcode.load_master_data'
+$ bundle exec rails runner -e production 'JpAddress::Zipcode.load_master_data'
 ```
 
 環境にもよりますが、１～３分ぐらいかかると思います。
@@ -60,9 +63,9 @@ http://localhost:3000/jp_address/zipcodes/search?zip=5330033
 
 ### APIを利用するサンプル JavaScript
 フォームに
-1. #zipcode（郵便番号を入力するテキストボックス。）
-2. #prefecture_id（いわゆる都道府県プルダウン）
-3. #address（住所を表示するテキストボックス）
+1. #zipcode （郵便番号を入力するテキストボックス）
+2. #prefecture_id （いわゆる都道府県プルダウン）
+3. #address （住所を表示するテキストボックス）
 
 の３要素があるとします。<br>
 #zipcodeに入れられた値を keyup イベントで拾ってAPIを叩き、都道府県プルダウンを選択し、住所をセットするサンプルです。
@@ -234,5 +237,5 @@ http://localhost:3000/jp_address/zipcodes/search?zip=5330033
 ```
 
 ##### 作者
-Copyright 2016 (c) Tad Kam, under MIT License.
+Copyright 2016 (c) Tad Kam, under MIT License.<br>
 Tad Kam <densya203@skult.jp>

@@ -1,4 +1,4 @@
-class CreateJpAddressZipcodes < ActiveRecord::Migration
+class CreateJpAddressZipcodes < ActiveRecord::Migration[6.1]
   def change
     create_table :jp_address_zipcodes do |t|
       t.string :zip       , null: false, index: true

@@ -17,10 +17,12 @@ module JpAddress
     private_class_method :_setup_directory
 
     def self._request_to_japanpost
-      url = URI.parse('https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip')
-      res = Net::HTTP.start(url.host, url.port) do |http|
-        http.get('/zipcode/dl/kogaki/zip/ken_all.zip')
-      end
+      res = nil
+      https = Net::HTTP.new('www.post.japanpost.jp',443)
+      https.use_ssl = true
+      https.start {
+        res = https.get('/zipcode/dl/kogaki/zip/ken_all.zip')
+      }
       res
     end
     private_class_method :_request_to_japanpost

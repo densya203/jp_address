@@ -1,13 +1,13 @@
-= Ruby on Rails 6 で 郵便番号検索 な gem
+= Ruby on Rails 6 で 郵便番号住所検索 な gem
 
 == JpAddressとは
 日本郵便の「郵便番号データ（https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip）」を Rails 6.1 で使用するための gem です。
 以下の機能を提供します。
 
-* 郵便局提供の郵便番号データをダウンロードしてＤＢにロードするクラスメソッド。（JpAddress::Zipcode.load_master_data）
-* 郵便番号をキーに住所情報を返却するＡＰＩ（jp_address/zipcodes#search）。
+* 郵便局提供の郵便番号データをダウンロードして自前ＤＢのテーブル（jp_address_zipcodes）にロードするクラスメソッド。（JpAddress::Zipcode.load_master_data）
+* 郵便番号を受け取り住所情報をJSONで返却するＡＰＩ（jp_address/zipcodes#search）。
 
-要するに、「郵便番号検索 ruby gem」でググった人向けの gem です。
+要するに、「郵便番号住所検索 ruby gem」でググった人向けの gem です。
 お使いのRailsアプリケーションにマウントして使えますので、後必要なのは戻ってくるJSONを加工する手順だけです。
 
 == インストール
@@ -47,10 +47,10 @@ GemFileに追記
 
 == ＡＰＩを利用するためのサンプル JavaScript
 フォームには
-* zipcode（テキストボックス）
-* prefecture_id（セレクトボックス。いわゆる都道府県プルダウン）
-* address（テキストボックス）
-の３要素があり、zipcodeに入れられた値を元にＡＰＩを叩き、prefecture_id と address に
+* #zipcode（テキストボックス）
+* #prefecture_id（セレクトボックス。いわゆる都道府県プルダウン）
+* #address（テキストボックス）
+の３要素があり、#zipcodeに入れられた値を元にＡＰＩを叩き、#prefecture_id と #address に
 値をセットするサンプルです。
 
 prefecture_id の選択は、都道府県名で行っています。
@@ -59,6 +59,7 @@ prefecture_id の選択は、都道府県名で行っています。
 ※ JQuery の存在を前提にしています。
 ※ もともと CoffeeScript で書いてあったソースを decaffeinate したものです。
 
+  // ここから
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -154,14 +155,17 @@ prefecture_id の選択は、都道府県名で行っています。
 
     return AddressSearch;
   }();
+  // ここまでを application.js など共通に読み込まれるファイルに配置。
 
+  // ここから
   // #zipcode, #prefecture_id, #address を各自の環境に合わせて書き換えてください。
   $(function() {
     var address_search = new AddressSearch('#zipcode', '#prefecture_id', '#address');
-    return $('#zipcode').keyup(function() {
-      return address_search.execute();
+    $('#zipcode').keyup(function() {
+      address_search.execute();
     });
   });
+  // ここまでをフォームのあるページに配置。
 
 
 == 作者

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jp_address (0.0.6)
+    jp_address (1.0.0)
       rubyzip
 
 GEM

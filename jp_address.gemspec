@@ -11,10 +11,10 @@ Gem::Specification.new do |s|
   s.email       = ["densya203@skult.jp"]
   s.homepage    = "https://github.com/densya203/jp_address"
   s.summary     = "Simple japan-zipcode-addresses API"
-  s.description = "JpAddress is simple japan-zipcode-address-search API. You can  load master-data from JapanPost and mount address-search-api to your rails application."
+  s.description = "JpAddress is simple japan-zipcode-address-search API. You can load master-data from JapanPost and mount address-search-api to your rails application."
   s.license     = "MIT"
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rubyzip"

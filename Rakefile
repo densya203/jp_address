@@ -10,7 +10,6 @@ RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
   rdoc.title    = 'JpAddress'
   rdoc.options << '--line-numbers'
-  rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
@@ -31,4 +30,4 @@ RSpec::Core::RakeTask.new(:spec) do |spec|
 end
 
 task :default => :spec
-task :test => :spec # for rubygems-test
+task :test => :spec

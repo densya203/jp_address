@@ -68,14 +68,11 @@ http://localhost:3000/jp_address/zipcodes/search?zip=5330033
 3. #address （住所を表示するテキストボックス）
 
 の３要素があるとします。<br>
-#zipcodeに入れられた値を keyup イベントで拾ってAPIを叩き、都道府県プルダウンを選択し、住所をセットするサンプルです。
+#zipcodeに入れられた値を keyup イベントで拾ってAPIを叩き、都道府県プルダウンを選択し、住所をセットするサンプルです。<br>
+郵便番号の半角ハイフンは自動でカットされます。
 
 都道府県プルダウンは、戻ってくるJSONの "prefecture" すなわち都道府県名で選択します。<br>
 ですので、お持ちの都道府県マスターの各レコードがどのようなＩＤを持っていても構いません。
-
-※ JQuery の存在を前提にしています。<br>
-※ 郵便番号の半角ハイフンは自動でカットされます。<br>
-※ もともと CoffeeScript で書いてあったソースを decaffeinate したものですので冗長です。本質的な処理はAddressSearch が担っているだけで、他の関数は decaffeinate に必要なだけです。
 
 #### フォーム
 ```
@@ -135,7 +132,9 @@ http://localhost:3000/jp_address/zipcodes/search?zip=5330033
 ```
 
 #### application.js など共通に読み込まれるファイルに配置するJavaScript
-
+※ JQuery の存在を前提にしています。<br>
+※ もともと CoffeeScript で書いてあったソースを decaffeinate したものですので冗長です（汗）。<br>
+本質的な処理はAddressSearch 関数が担っているだけで、他の関数は decaffeinate に必要なだけです。
 ```js script
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {

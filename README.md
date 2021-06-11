@@ -1,7 +1,7 @@
 # Ruby on Rails 6 で 郵便番号住所検索 な gem
 
 ## JpAddressとは
-日本郵便の「[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki-zip.html)」を Rails 6.1 で使用するための gem です。
+日本郵便の「[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki-zip.html)」を用いて、あなたの Rails 6.1 サイトに「郵便番号からの住所検索機能」を組み込むための gem です。
 以下の機能を提供します。
 
 * [[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki/zip/ken_all.zip "ken_all.zip")]をダウンロードして自前ＤＢのテーブル（jp_address_zipcodes）にロードするクラスメソッド。（```JpAddress::Zipcode.load_master_data```）
@@ -36,13 +36,30 @@ $ bundle exec rails runner -e development 'JpAddress::Zipcode.load_master_data'
 $ bundle exec rails runner -e production 'JpAddress::Zipcode.load_master_data'
 ```
 
-環境にもよりますが、１～３分ぐらいかかると思います。
+環境にもよりますが、５分ぐらいかかると思います。
 
-※ APP_ROOT/tmp/ を作業ディレクトリに使用しています。<br>
-※ 最初にテーブルをトランケートしますので、毎回「全件insert」になります。
+APP_ROOT/tmp/ を作業ディレクトリに使用しています。<br>
+最初にテーブルをトランケートしますので、毎回「全件insert」になります。<br>
+
+同じ郵便番号を持つレコードは統合されます。<br>
+<br>
+例：9896712<br>
+```
+"宮城県","大崎市","鳴子温泉水沼"
+"宮城県","大崎市","鳴子温泉南山"
+"宮城県","大崎市","鳴子温泉山際"
+"宮城県","大崎市","鳴子温泉和田"
+```
+これらは先頭から共通する地名を探し、うまく見つかれば
+```
+"宮城県","大崎市","鳴子温泉"
+```
+として１つのレコードにします。
+共通する地名が抜き出せない場合は空の町名にします。
 
 ### APIのマウント
 Railsアプリの config/routes.rb に追記。
+at: に渡す値は /jp_address でなくても /service や /api などでも構いません。
 ```ruby
 mount JpAddress::Engine, at: "/jp_address"
 ```

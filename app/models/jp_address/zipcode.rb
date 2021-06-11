@@ -58,7 +58,73 @@ module JpAddress
           )
         )
       end
+      _merge_same_zip_addresses
       _remove_csv
+    end
+
+    # 同じ郵便番号を持つレコードを統合します。
+    #
+    # 例：9896712
+    #   "宮城県","大崎市","鳴子温泉水沼"
+    #   "宮城県","大崎市","鳴子温泉南山"
+    #   "宮城県","大崎市","鳴子温泉山際"
+    #   "宮城県","大崎市","鳴子温泉和田"
+    # これらは
+    #   "宮城県","大崎市","鳴子温泉" として１つのレコードにします。
+    #   共通する地名が抜き出せない場合は空の町名にします。
+    def self._merge_same_zip_addresses
+      group(:zip).having('count(*) > 1').pluck(:zip).each do |dup_zip|
+        buf = nil
+        town_names = []
+        where(zip: dup_zip).order(:id).each_with_index do |rec, i|
+          town_names << rec.town if rec.town.present?
+          if i == 0
+            buf = rec.dup
+          end
+          rec.destroy
+        end
+        shared_town_name = _find_shared_name_from(town_names)
+        buf.town = shared_town_name
+        buf.save!
+      end
+      nil
+    end
+
+    # 引数に渡された地名群から、先頭から見て共通となる地名を返します。
+    #
+    # input = %w[鳴子温泉小身川
+    #            鳴子温泉川袋
+    #            鳴子温泉木戸脇
+    #         ]
+    #
+    # return => 鳴子温泉
+    def self._find_shared_name_from(names)
+      return '' if names.blank?
+
+      name_length_min = names.map{ |n| n.length }.min
+      diff_pos        = nil
+      chars           = []
+
+      (0..(name_length_min - 1)).each do |pos|
+        break if diff_pos.present?
+        char = nil
+        names.each do |name|
+          if char.nil?
+            char  = name.each_char.to_a[pos]
+            chars << char
+          elsif char != name.each_char.to_a[pos]
+            diff_pos = pos
+            break
+          end
+        end
+      end
+
+      if diff_pos.present? && diff_pos > 1
+        ret = chars[0, diff_pos].join
+        return ret
+      end
+
+      ''
     end
 
     def self._clear_table

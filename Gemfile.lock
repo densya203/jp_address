@@ -195,7 +195,7 @@ GEM
       tsort
     reline (0.6.3)
       io-console (~> 0.5)
-    rexml (3.2.5)
+    rexml (3.4.2)
     rspec-core (3.10.1)
       rspec-support (~> 3.10.0)
     rspec-expectations (3.10.1)

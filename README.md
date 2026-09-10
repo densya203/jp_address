@@ -1,10 +1,10 @@
-# Ruby on Rails 6 で 郵便番号住所検索 な gem
+# Ruby on Rails で 郵便番号住所検索 な gem
 
 ## JpAddressとは
-日本郵便の「[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki-zip.html)」を用いて、あなたの Rails 6.1 サイトに「郵便番号からの住所検索機能」を組み込むための gem です。
+日本郵便の「[郵便番号データ](https://www.post.japanpost.jp/zipcode/download.html)」を用いて、あなたの Rails サイトに「郵便番号からの住所検索機能」を組み込むための gem です。
 以下の機能を提供します。
 
-* [[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/oogaki/zip/ken_all.zip "ken_all.zip")]をダウンロードして自前ＤＢのテーブル（jp_address_zipcodes）にロードするクラスメソッド。（```JpAddress::Zipcode.load_master_data```）
+* [[郵便番号データ](https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip "ken_all.zip")]をダウンロードして自前ＤＢのテーブル（jp_address_zipcodes）にロードするクラスメソッド。（```JpAddress::Zipcode.load_master_data```）
 * 郵便番号を受け取り都道府県名と住所をJSONで返却するAPI。
 （```jp_address/zipcodes#search```）
 
@@ -14,8 +14,17 @@ APIはお使いのRailsアプリケーションにマウントして使います
 あと必要なのは、戻ってくるJSONを加工してHTML要素にセットするJavaScriptの記述だけです。<br>
 （本記事下部にサンプルコードを掲載しています。）
 
+### 対応バージョン
+
+| | 対応 |
+|---|---|
+| Ruby | 3.1 以降 |
+| Rails | 7.1 / 8.0 / 8.1 |
+
+Rails 6.x 以前をお使いの場合は 1.0.2 をご利用ください。
+
 ### インストール
-GemFileに追記
+Gemfileに追記
 ```ruby
 gem 'jp_address'
   ```
@@ -36,10 +45,14 @@ $ bundle exec rails runner -e development 'JpAddress::Zipcode.load_master_data'
 $ bundle exec rails runner -e production 'JpAddress::Zipcode.load_master_data'
 ```
 
-環境にもよりますが、５分ぐらいかかると思います。
-
 APP_ROOT/tmp/ を作業ディレクトリに使用しています。<br>
 最初にテーブルをトランケートしますので、毎回「全件insert」になります。<br>
+
+すでに手元に ken_all.csv がある場合は、パスを渡せばダウンロードを省略できます。<br>
+（文字コードは日本郵便の配布どおり CP932 のままで構いません。）
+```ruby
+JpAddress::Zipcode.load_master_data('tmp/ken_all.csv')
+```
 
 同じ郵便番号を持つレコードは統合されます。<br>
 <br>
@@ -78,6 +91,14 @@ http://localhost:3000/jp_address/zipcodes/search?zip=5330033
 {"id":84280,"zip":"5330033","prefecture":"大阪府","city":"大阪市東淀川区","town":"東中島"}
 ```
 
+該当する郵便番号がない場合は、各項目が null の JSON が返ります。
+```js script
+{"id":null,"zip":null,"prefecture":null,"city":null,"town":null}
+```
+
+半角ハイフン・空白・全角数字は自動的に取り除かれるので、`533-0033` や `５３３－００３３` を
+そのまま投げても構いません。
+
 ### APIを利用するサンプル JavaScript
 フォームに
 1. #zipcode （郵便番号を入力するテキストボックス）
@@ -85,8 +106,7 @@ http://localhost:3000/jp_address/zipcodes/search?zip=5330033
 3. #address （住所を表示するテキストボックス）
 
 の３要素があるとします。<br>
-#zipcodeに入れられた値を keyup イベントで拾ってAPIを叩き、都道府県プルダウンを選択し、住所をセットするサンプルです。<br>
-郵便番号の半角ハイフンは自動でカットされます。
+#zipcodeに入れられた値を input イベントで拾ってAPIを叩き、都道府県プルダウンを選択し、住所をセットするサンプルです。<br>
 
 都道府県プルダウンは、戻ってくるJSONの "prefecture" すなわち都道府県名で選択します。<br>
 ですので、お持ちの都道府県マスターの各レコードがどのようなＩＤを持っていても構いません。
@@ -148,108 +168,73 @@ http://localhost:3000/jp_address/zipcodes/search?zip=5330033
 </form>
 ```
 
-#### application.js など共通に読み込まれるファイルに配置するJavaScript
-※ JQuery の存在を前提にしています。<br>
-※ もともと CoffeeScript で書いてあったソースを decaffeinate したものですので冗長です（汗）。<br>
-本質的な処理はAddressSearch 関数が担っているだけで、他の関数は decaffeinate に必要なだけです。
+#### JavaScript
+jQuery などのライブラリは不要です。app/javascript 配下など、フォームのあるページで
+読み込まれる場所に置いてください。
+
 ```js script
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
+class AddressSearch {
+  constructor(zipSelector, prefectureSelector, addressSelector, endpoint = '/jp_address/zipcodes/search') {
+    this.zip        = document.querySelector(zipSelector);
+    this.prefecture = document.querySelector(prefectureSelector);
+    this.address    = document.querySelector(addressSelector);
+    this.endpoint   = endpoint;
+  }
+
+  start() {
+    this.zip.addEventListener('input', () => this.execute());
+  }
+
+  async execute() {
+    const zip = this.zip.value.replace(/[^0-9０-９]/g, '');
+    if (zip.length !== 7) return;
+
+    const url = `${this.endpoint}?zip=${encodeURIComponent(zip)}`;
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return;
+
+    const json = await res.json();
+    if (json.id === null) {
+      this.clear();
+    } else {
+      this.setPrefecture(json.prefecture);
+      this.address.value = `${json.city}${json.town}`;
     }
   }
 
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-
-      if ("value" in descriptor)
-        descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
+  clear() {
+    this.prefecture.selectedIndex = 0;
+    this.address.value = '';
   }
 
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps)
-      _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps)
-      _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  var AddressSearch = function() {
-    "use strict";
-    function AddressSearch(zip_elem_id, prefecture_elem_id, address_elem_id) {
-      _classCallCheck(this, AddressSearch);
-      this.zip                = $(zip_elem_id);
-      this.prefecture         = $(prefecture_elem_id);
-      this.address            = $(address_elem_id);
-      this.prefecture_elem_id = prefecture_elem_id;
+  setPrefecture(name) {
+    for (const option of this.prefecture.options) {
+      if (option.text === name) {
+        option.selected = true;
+        return;
+      }
     }
+  }
+}
 
-    _createClass(AddressSearch, [{
-      key: "_remove_hyphen",
-      value: function _remove_hyphen() {
-        return this.zip.val(this.zip.val().replace(/-/, ''));
-      }
-    }, {
-      key: "_clear_current_value",
-      value: function _clear_current_value() {
-        $(this.prefecture_elem_id + ' >option:eq(0)').prop('selected', true);
-        return this.address.val('');
-      }
-    }, {
-      key: "_set_prefecture",
-      value: function _set_prefecture(json) {
-        return $(this.prefecture_elem_id + ' > option').each(function() {
-          if ($(this).text() === json['prefecture']) {
-            return $(this).prop('selected', true);
-          }
-        });
-      }
-    }, {
-      key: "_set_address",
-      value: function _set_address(json) {
-        return this.address.val(json['city'] + json['town']);
-      }
-    }, {
-      key: "_call_api",
-      value: function _call_api() {
-        var _this = this;
-        return $.getJSON('/jp_address/zipcodes/search', {zip: this.zip.val()}, function(json) {
-          if (json['id'] === null) {
-            return _this._clear_current_value();
-          } else {
-            _this._set_prefecture(json);
-            return _this._set_address(json);
-          }
-        });
-      }
-    }, {
-      key: "execute",
-      value: function execute() {
-        this._remove_hyphen();
-        if (this.zip.val().length === 7) {
-          return this._call_api();
-        }
-      }
-    }]);
-
-    return AddressSearch;
-  }();
+// #zipcode, #prefecture_id, #address を各自の環境に合わせて書き換えてください。
+document.addEventListener('DOMContentLoaded', () => {
+  new AddressSearch('#zipcode', '#prefecture_id', '#address').start();
+});
 ```
 
-#### フォームのあるページに配置するJavaScript
-```js script
-  // #zipcode, #prefecture_id, #address を各自の環境に合わせて書き換えてください。
-  $(function() {
-    var address_search = new AddressSearch('#zipcode', '#prefecture_id', '#address');
-    $('#zipcode').keyup(function() {
-      address_search.execute();
-    });
-  });
+### 開発
+
+```
+$ bundle install
+$ bundle exec rspec
+```
+
+複数バージョンの Rails で試す場合は gemfiles/ 配下の Gemfile を使ってください。
+
+```
+$ BUNDLE_GEMFILE=gemfiles/rails_7_1.gemfile bundle install
+$ BUNDLE_GEMFILE=gemfiles/rails_7_1.gemfile bundle exec rspec
 ```
 
 ##### 作者

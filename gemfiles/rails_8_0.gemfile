@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+gemspec path: '..'
+
+gem 'rails', '~> 8.0.0'
+gem 'sqlite3', '>= 2.1'
+gem 'rspec-rails', '~> 8.0'
+gem 'factory_bot_rails', '>= 6.2'
+gem 'webmock', '>= 3.18'
+gem 'rake', '>= 13.0'

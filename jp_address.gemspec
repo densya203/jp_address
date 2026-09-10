@@ -1,9 +1,5 @@
-$:.push File.expand_path("../lib", __FILE__)
+require_relative "lib/jp_address/version"
 
-# Maintain your gem's version:
-require "jp_address/version"
-
-# Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
   s.name        = "jp_address"
   s.version     = JpAddress::VERSION
@@ -14,15 +10,22 @@ Gem::Specification.new do |s|
   s.description = "JpAddress is simple japan-zipcode-address-search API. You can load master-data from JapanPost and mount address-search-api to your rails application."
   s.license     = "MIT"
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
-  s.test_files = Dir["spec/**/*"]
+  s.required_ruby_version = ">= 3.1.0"
 
-  s.add_dependency "rubyzip"
+  s.metadata = {
+    "homepage_uri"          => s.homepage,
+    "source_code_uri"       => "#{s.homepage}/tree/v#{JpAddress::VERSION}",
+    "bug_tracker_uri"       => "#{s.homepage}/issues",
+    "changelog_uri"         => "#{s.homepage}/blob/master/CHANGELOG.md",
+    "rubygems_mfa_required" => "true"
+  }
 
-  s.add_development_dependency "rails"
-  s.add_development_dependency "sqlite3"
-  s.add_development_dependency "rspec-rails"
-  s.add_development_dependency "factory_bot_rails"
-  s.add_development_dependency "webmock"
-  s.add_development_dependency "vcr"
+  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md", "CHANGELOG.md"]
+  s.require_paths = ["lib"]
+
+  s.add_dependency "railties", ">= 7.1", "< 9.0"
+  s.add_dependency "activerecord", ">= 7.1", "< 9.0"
+  s.add_dependency "rubyzip", ">= 2.3", "< 4.0"
+  # csv is a bundled gem since Ruby 3.4, so it has to be declared explicitly.
+  s.add_dependency "csv", ">= 3.0", "< 4.0"
 end

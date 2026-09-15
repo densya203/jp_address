@@ -17,7 +17,6 @@ Gem::Specification.new do |s|
     "source_code_uri"       => "#{s.homepage}/tree/v#{JpAddress::VERSION}",
     "bug_tracker_uri"       => "#{s.homepage}/issues",
     "changelog_uri"         => "#{s.homepage}/blob/master/CHANGELOG.md",
-    "rubygems_mfa_required" => "true"
   }
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md", "CHANGELOG.md"]

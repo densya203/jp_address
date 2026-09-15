@@ -237,6 +237,22 @@ $ BUNDLE_GEMFILE=gemfiles/rails_7_1.gemfile bundle install
 $ BUNDLE_GEMFILE=gemfiles/rails_7_1.gemfile bundle exec rspec
 ```
 
+### リリース
+
+rubygems.org への公開は GitHub Actions（`.github/workflows/release.yml`）が
+Trusted Publishing で行うので、API キーも `gem push` も不要です。
+
+1. `lib/jp_address/version.rb` のバージョンと CHANGELOG.md を更新して master に push
+2. バージョンと同じ名前のタグを push
+
+```
+$ git tag v2.0.1
+$ git push origin v2.0.1
+```
+
+CI の全マトリクスが通ったあと、自動で rubygems.org に公開されます。
+タグ名と `JpAddress::VERSION` が食い違っている場合は公開せずに止まります。
+
 ##### 作者
 Copyright 2016 (c) Tad Kam, under MIT License.<br>
 Tad Kam <densya203@skult.jp>

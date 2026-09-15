@@ -1,0 +1,54 @@
+# v* タグを push すると、テストが通ったあと rubygems.org に gem を公開する。
+#
+# 認証は Trusted Publishing（GitHub Actions の OIDC）で行うので、API キーは不要。
+# rubygems.org 側で jp_address の Trusted publisher に以下を登録しておくこと。
+#   Repository owner:  densya203
+#   Repository name:   jp_address
+#   Workflow filename: release.yml
+#   Environment:       release
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  spec:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: spec
+    if: github.repository == 'densya203/jp_address'
+    runs-on: ubuntu-latest
+    # rubygems.org の Trusted publisher に登録した environment 名と合わせる。
+    environment: release
+
+    permissions:
+      # タグ push が起点なので rake release はタグを作らず push もしない。書き込み権限は不要。
+      contents: read
+      # Trusted Publishing に必須。
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Check the tag matches JpAddress::VERSION
+        run: |
+          version="$(ruby -r ./lib/jp_address/version -e 'print JpAddress::VERSION')"
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match JpAddress::VERSION (${version})"
+            exit 1
+          fi
+
+      - uses: rubygems/release-gem@v1
